@@ -1,0 +1,85 @@
+%% 
+%% Created in 2018 by Martin Slapak
+%%
+%% Based on file for NRP report LaTeX class by Vit Zyka (2008)
+
+\documentclass[hidelinks, english]{mvi-report}
+
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{mathtools}
+
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{dirtree}
+\usepackage[export]{adjustbox}
+\usepackage{array}
+\usepackage{bigstrut}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage[all]{hypcap}
+\usepackage[bottom]{footmisc}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{cleveref}
+
+
+
+\graphicspath{{img/}}
+
+\title{Automated machine learning}
+
+\author{Yevhen Kuzmovych}
+\affiliation{ČVUT - FIT}
+\email{kuzmoyev@fit.cvut.cz}
+
+
+\newcommand{\subimage}[3][1]{
+\subfigure{
+    \includegraphics[valign=c, width=#1\textwidth]{#2.#3}
+}
+}
+
+\newcommand{\smplimage}[3][1]{
+\centerline{
+    \includegraphics[width=#1\textwidth]{#2.#3}
+}
+}
+
+\newcommand{\image}[4][1]{
+\begin{figure}[H]
+    \smplimage[#1]{#2}{#3}
+    \caption{#4}
+    \label{fig:#2}
+\end{figure}
+}
+
+
+
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Input data}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Outputs}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{reference}
+
+
+\end{document}
