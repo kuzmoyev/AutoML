@@ -34,10 +34,9 @@ class BaseEvaluator:
         self.time_limit = time_limit
 
     def evaluate_models(self, X, y):
-        signal.alarm(self.time_limit)
-
         try:
-            pass
+            signal.alarm(self.time_limit)
+
         except TimeLimitExceeded:
             pass
         else:
