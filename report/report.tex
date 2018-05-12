@@ -65,12 +65,38 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Input data}
+One of the inalienable parts of the data analyst work is selection of the appropriate predictive algorithm for
+the given task. In most cases, this part comes down to testing set of selected algorithms on the given dataset or its
+subset and selecting the one with the best performance. This process can be automated and improved with prediction of
+algorithm quality.
+
+Assuming that each dataset has some hidden properties that could indicate tendency of some algorithms to perform
+better than the others, it should be possible to extract those properties and predict algoritms' quality based on them.
+
+There were many attempts that tried to select appropriate meta-features
+\cite{sampling-based-relative-landmarks}\cite{statlog}\cite{meta-learning-for-algorithm-selection}. In the framework of
+this project, simply obtainable meta-featres used in the StatLog project\cite{statlog} will be combined with landmarks
+and relative landmarks described in \textit{Sampling-Based Relative Landmarks: Systematically Test-Driving Algorithms
+Before Choosing}\cite{sampling-based-relative-landmarks} to predict algorithms quality.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methods}
+
+
+
+\subsection{Preprocessing}
+For this project, only required preprocessing techniques were used:
+
+\begin{itemize}
+    \item \textbf{Filling missing data} (because most of the tested models require complete data). NaNs are filled with
+    the means in numerical coulmns and most frequent values in categorical.
+    \item \textbf{Encoding categorical data}. Nominal data is encoded using \textit{one hot encoding}. Ordinal features
+    can be specified with the needed order, labels are then encoded with natural numbers.
+\end{itemize}
+
+Implementation is parameterized and can be easely extended with the other techniques.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Outputs}
