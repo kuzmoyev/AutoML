@@ -39,7 +39,9 @@ class BaseMetaExtractor:
         })
 
     def extract_preprocessed(self, X, y):
-        std_ratio = gmean(X.std(axis=0))
+        stds = X.std(axis=0)
+        stds = stds[stds > 0]
+        std_ratio = gmean(stds)
         corr_mean = X.corr(method='pearson').abs().values.mean()
         skew_mean = X.skew(axis=0).mean()
         kurt_mean = X.kurtosis(axis=0).mean()
@@ -64,7 +66,7 @@ class BaseMetaExtractor:
         for i, (model_class, model_kwargs) in enumerate(self.landmarks_models):
             model = model_class(**model_kwargs)
             start = timer()
-            score = cross_val_score(model, X, y, cv=5, scoring=self.score).mean()
+            score = cross_val_score(model, X, y, cv=5).mean()
             end = timer()
             self.meta_data['lp {}'.format(i)] = score
             self.meta_data['lt {}'.format(i)] = end - start
@@ -118,7 +120,7 @@ class RegressionMetaExtractor(BaseMetaExtractor):
             'YImbalance': y_imbalance,
         })
 
-    score = make_scorer(mean_squared_error)
+    score = make_scorer(mean_squared_error, greater_is_better=False)
 
 
 def get_extractor(problem_type):

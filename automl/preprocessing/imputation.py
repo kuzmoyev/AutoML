@@ -29,3 +29,6 @@ class AutoImputer(TransformerMixin):
 
     def transform(self, X, y=None):
         return X.fillna(self.fill)
+
+    def __repr__(self):
+        return 'Strategy: {}'.format(self.strategy)

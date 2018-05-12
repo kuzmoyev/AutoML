@@ -2,7 +2,9 @@ from sklearn.pipeline import Pipeline
 import numpy as np
 
 from preprocessing.categorical import CategoricalToNumericalEncoder
+from preprocessing.drop_constant import ConstantColumnsDrop
 from preprocessing.imputation import AutoImputer
+from preprocessing.scaler import Scaler
 
 
 class Preprocessing:
@@ -21,14 +23,22 @@ class Preprocessing:
     def get_pipeline(self, X, y=None):
         steps = []
 
+        # Dropping constant columns
+        if (X == X.iloc[0]).all().any():
+            dropper = ConstantColumnsDrop()
+            steps.append(('Constant columns drop', dropper))
+
         # Filling missing values
         if X.isnull().values.any():
             imputer = AutoImputer()
             steps.append(('Imputer', imputer))
+
+        scaler = Scaler()
+        steps.append(('Scaler', scaler))
 
         # Converting categorical features to numerical
         if not X.select_dtypes(exclude=[np.number]).columns.empty:
             converter = CategoricalToNumericalEncoder(ordinal=self.ordinal_features)
             steps.append(('Categorical converter', converter))
 
-        return Pipeline(steps)
+        return Pipeline(steps) if steps else None
