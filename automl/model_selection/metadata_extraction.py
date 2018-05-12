@@ -1,9 +1,13 @@
+from timeit import default_timer as timer
+
 import pandas as pd
 import numpy as np
 from scipy.stats.mstats import gmean
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import make_scorer, mean_squared_error
+from sklearn.metrics.scorer import accuracy_scorer
+from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
@@ -49,14 +53,21 @@ class BaseMetaExtractor:
 
         self._extract_landmarks(X, y)
 
+    @staticmethod
+    def score(y, y_pred, **kwargs):
+        raise NotImplemented
+
     def _extract_landmarks(self, X, y, sample_size=500):
         sample = X.assign(y=y).sample(min(sample_size, len(y)))
         X, y = sample.drop('y', axis=1), sample['y']
 
         for i, (model_class, model_kwargs) in enumerate(self.landmarks_models):
             model = model_class(**model_kwargs)
-            score = cross_val_score(model, X, y, cv=5).mean()
-            self.meta_data['landmark {}'.format(i)] = score
+            start = timer()
+            score = cross_val_score(model, X, y, cv=5, scoring=self.score).mean()
+            end = timer()
+            self.meta_data['lp {}'.format(i)] = score
+            self.meta_data['lt {}'.format(i)] = end - start
 
     def as_df(self):
         return pd.DataFrame(self.meta_data, index=[0])
@@ -84,6 +95,8 @@ class ClassificationMetaExtractor(BaseMetaExtractor):
             'YImbalance': y_imbalance,
         })
 
+    score = accuracy_scorer
+
 
 class RegressionMetaExtractor(BaseMetaExtractor):
     landmarks_models = [
@@ -104,6 +117,8 @@ class RegressionMetaExtractor(BaseMetaExtractor):
             'YStd': y_std,
             'YImbalance': y_imbalance,
         })
+
+    score = make_scorer(mean_squared_error)
 
 
 def get_extractor(problem_type):
