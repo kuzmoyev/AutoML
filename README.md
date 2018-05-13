@@ -1,7 +1,6 @@
 # Automated machine learning
 
-Simple automated machine learning library based on relative landmarks described in *Sampling-Based Relative Landmarks: Systemat-
-ically Test-Driving Algorithms Before Choosing* by Carlos Soares, Johann Petrak, and Pavel Brazdil.
+Simple automated machine learning library based on relative landmarks described in *Sampling-Based Relative Landmarks: Systematically Test-Driving Algorithms Before Choosing* by Carlos Soares, Johann Petrak, and Pavel Brazdil.
 
 
 ## Usage
