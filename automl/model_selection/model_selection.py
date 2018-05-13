@@ -117,10 +117,8 @@ class ClassificationEvaluator(BaseEvaluator):
         (MLPClassifier, dict()),
         (MultinomialNB, dict()),
         (NearestCentroid, dict()),
-        (NuSVC, dict()),
         (PassiveAggressiveClassifier, dict(max_iter=1e-3)),
         (Perceptron, dict(max_iter=1e-3)),
-        (QuadraticDiscriminantAnalysis, dict()),
         (RandomForestClassifier, dict()),
         (SVC, dict())
     ]

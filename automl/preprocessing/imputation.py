@@ -21,8 +21,7 @@ class AutoImputer(TransformerMixin):
         self.fill = None
 
     def fit(self, X, y=None):
-        self.fill = pd.Series([X[c].value_counts().index[0]
-                               if X[c].dtype == np.dtype('O') else X[c].mean() for c in X],
+        self.fill = pd.Series([X[c].value_counts().index[0] if X[c].dtype == np.dtype('O') else X[c].mean() for c in X],
                               index=X.columns)
 
         return self

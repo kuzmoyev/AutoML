@@ -1,5 +1,3 @@
-from timeit import default_timer as timer
-
 import pandas as pd
 import numpy as np
 from scipy.stats.mstats import gmean
@@ -7,18 +5,21 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import make_scorer, mean_squared_error
 from sklearn.metrics.scorer import accuracy_scorer
-from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
+from model_selection.model_selection import ClassificationEvaluator, RegressionEvaluator
 from model_selection.problem_classification import ProblemClassifier
+
+from collections import OrderedDict
 
 
 class BaseMetaExtractor:
     landmarks_models = []
 
-    def __init__(self):
-        self.meta_data = {}
+    def __init__(self, evaluator=None):
+        self.meta_data = OrderedDict()
+        self.evaluator = evaluator
 
     def extract_initial(self, X, y):
         examples, features = X.shape
@@ -59,17 +60,13 @@ class BaseMetaExtractor:
     def score(y, y_pred, **kwargs):
         raise NotImplemented
 
-    def _extract_landmarks(self, X, y, sample_size=500):
+    def _extract_landmarks(self, X, y, sample_size=100):
         sample = X.assign(y=y).sample(min(sample_size, len(y)))
         X, y = sample.drop('y', axis=1), sample['y']
 
-        for i, (model_class, model_kwargs) in enumerate(self.landmarks_models):
-            model = model_class(**model_kwargs)
-            start = timer()
-            score = cross_val_score(model, X, y, cv=5).mean()
-            end = timer()
-            self.meta_data['lp {}'.format(i)] = score
-            self.meta_data['lt {}'.format(i)] = end - start
+        self.evaluator.evaluate_models(X, y)
+        landmarks = self.evaluator.relative_landmarks
+        self.meta_data.update({'{}_rl'.format(cls.__name__): rl for (cls, kw), rl in landmarks})
 
     def as_df(self):
         return pd.DataFrame(self.meta_data, index=[0])
@@ -85,6 +82,9 @@ class ClassificationMetaExtractor(BaseMetaExtractor):
         (KNeighborsClassifier, dict(n_neighbors=3)),
         (LinearDiscriminantAnalysis, dict())
     ]
+
+    def __init__(self):
+        super().__init__(ClassificationEvaluator())
 
     def extract_initial(self, X, y):
         super().extract_initial(X, y)
@@ -107,6 +107,9 @@ class RegressionMetaExtractor(BaseMetaExtractor):
         (KNeighborsRegressor, dict(n_neighbors=3)),
         (LinearRegression, dict()),
     ]
+
+    def __init__(self):
+        super().__init__(RegressionEvaluator())
 
     def extract_initial(self, X, y):
         super().extract_initial(X, y)

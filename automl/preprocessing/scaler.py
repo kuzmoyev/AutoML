@@ -1,12 +1,12 @@
 from sklearn.base import TransformerMixin
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
 
 
 class Scaler(TransformerMixin):
 
     def __init__(self):
-        self.scaler = StandardScaler()
+        self.scaler = MinMaxScaler()
 
     def fit(self, X, y=None):
         numerical_columns = X.select_dtypes(include=[np.number]).columns

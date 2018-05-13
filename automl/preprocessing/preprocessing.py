@@ -33,8 +33,10 @@ class Preprocessing:
             imputer = AutoImputer()
             steps.append(('Imputer', imputer))
 
-        scaler = Scaler()
-        steps.append(('Scaler', scaler))
+        # Scaling numerical values
+        if not X.select_dtypes(include=[np.number]).columns.empty:
+            scaler = Scaler()
+            steps.append(('Scaler', scaler))
 
         # Converting categorical features to numerical
         if not X.select_dtypes(exclude=[np.number]).columns.empty:

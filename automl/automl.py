@@ -1,3 +1,5 @@
+import os
+
 from sklearn.pipeline import Pipeline
 import pandas as pd
 
@@ -80,26 +82,18 @@ class AutoML:
         else:
             print('\t' * level, estimator, sep='')
 
+    def save_meta_data(self, file_path, task_name):
+        meta_data = self.meta_extractor.as_dict()
+        landmarks = self.model_evaluator.relative_landmarks
 
-def main():
-    from os import path
-    import numpy as np
+        meta_data['Task'] = task_name
+        meta_data.move_to_end('Task', last=False)
 
-    folder = 'data/regression/house-prices-advanced-regression-techniques'
+        meta_data.update({'{}'.format(cls.__name__): rl for (cls, kw), rl in landmarks})
 
-    df = pd.read_csv(path.join(folder, 'train.csv'))
-    X_test = pd.read_csv(path.join(folder, 'test.csv'))
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path)
+        else:
+            df = pd.DataFrame(columns=meta_data.keys())
 
-    X, y = df.drop('SalePrice', axis=1), df['SalePrice']
-
-    auto_ml = AutoML(problem_type=ProblemClassifier.REGRESSION)
-    auto_ml.fit(X, y)
-    auto_ml.describe()
-
-    predictions = auto_ml.predict(X_test)
-    submission = pd.DataFrame({'Id': X_test.Id, 'SalePrice': predictions})
-    submission.to_csv(path.join(folder, 'submission.csv'), index=False)
-
-
-if __name__ == '__main__':
-    main()
+        df.append(meta_data, ignore_index=True).to_csv(file_path, index=False)
