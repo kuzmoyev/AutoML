@@ -64,29 +64,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-One of the inalienable parts of the data analyst work is selection of the appropriate predictive algorithm for
-the given task. In most cases, this part comes down to testing set of selected algorithms on the given dataset or its
-subset and selecting the one with the best performance. This process can be automated and improved with prediction of
+One of the inalienable parts of the data analyst work is the selection of the appropriate predictive algorithm for
+the given task. In most cases, this part comes down to the testing set of selected algorithms on the given dataset or its
+subset and selecting the one with the best performance. This process can be automated and improved with the prediction of
 algorithm quality.
 
-Assuming that each dataset has some hidden properties that could indicate tendency of some algorithms to perform
-better than the others, it should be possible to extract those properties and predict algoritms' quality based on them.
+Assuming that each dataset has some hidden properties that could indicate a tendency of some algorithms to perform
+better than the others, it should be possible to extract those properties and predict algorithms' quality based on them.
 
 There were many attempts that tried to select appropriate meta-features
 \cite{sampling-based-relative-landmarks}\cite{statlog}\cite{meta-learning-for-algorithm-selection}. In the framework of
-this project, simply obtainable meta-featres used in the StatLog project\cite{statlog} will be combined with landmarks
+this project, simply obtainable meta-features used in the StatLog project\cite{statlog} will be combined with landmarks
 and relative landmarks described in \textit{Sampling-Based Relative Landmarks: Systematically Test-Driving Algorithms
 Before Choosing}\cite{sampling-based-relative-landmarks} to predict algorithms quality.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methods}
 
 Output library will be able to extract meta-features from the given data and build predictive pipeline using train data.
-Algorithm will try to predict performance of each used model, test them in the predicted order, choose the best one and
-fit to the train data in a limited time.
+The algorithm will try to predict the performance of each used model, test them in the predicted order, choose the best
+one and fit the train data in a limited time.
 
-Whole process consists of the following parts.
+The whole process consists of the following parts.
 
 \subsection{Preprocessing}
 For this project, only required preprocessing techniques were used:
@@ -97,15 +96,99 @@ For this project, only required preprocessing techniques were used:
     \item \textbf{Encoding categorical data}. Nominal data is encoded using \textit{one hot encoding}. Ordinal features
     can be specified with the needed order, labels are then encoded with natural numbers.
     \item \textbf{Dropping constant columns}.
-    \item \textbf{Scaling}. Standard scaling of numerical data.
+    \item \textbf{Scaling}. Scaling of numerical data ot the range (0, 1).
 \end{itemize}
 
-Implementation is parameterized and can be easely extended with the other techniques.
+Implementation is parameterized and can be easily extended with the other techniques.
 
 \subsection{Meta-data collection}
 
 Meta-features of the given dataset are collected for prediction of the quality of the used models. Collected
 meta-features are described in table \ref{fig:meta-features}.
+
+
+\subsection{Models evaluation and selection}
+In model quality evaluation there are two primary characteristics: \textbf{accuracy} and \textbf{processing time}.
+Considering these characteristics, models quality is evaluated using so-called \textit{Adjusted Ratio of Ratios}(ARR)
+that combines models accuracy and processing time to assess relative performance among other models. \textit{In ARR
+the compromise between the two criteria is given by the user in the form "the amount of accuracy I'm willing to trade for
+a 10 times speed-up is X\%"}\cite{sampling-based-relative-landmarks}. So for two given algorithms $i$ and $j$ on
+the data set $d$ the ARR computed as follows:
+$$ ARR^d_{ij} = \dfrac{\dfrac{A^d_i}{A^d_j}}{1+\log{(\dfrac{T^d_i}{T^d_j})}*X} $$
+where $A^d_i$ is the accuracy of the model $i$ on the data set~$d$ and $T^d_i$ is its processing time.
+
+Accuracy in classification problems computed simply as a ratio of the number of correctly classified examples to
+the number of total examples: $ A^d_i = \dfrac{C}{N} $. Accuracy for regression problems is computed as:
+$$ A^d_i = 1 - \dfrac{RMSE_i}{\max_{j}RMSE_j} $$
+
+Now using computed ARRs, we can generate realtive landmarks for each of $n$ models:
+$$ rl^d_i = \dfrac{\sum_{j \neq i}ARR^d_{ij}}{n - 1} $$
+which is used to select the best model and as a meta-features on the subset of the task of size 100(chosen arbitrarily).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Outputs}
+The output of this project is the implemented library in Python that is capable to select the appropriate algorithm
+based on input data and problem type in a limited time. Usage is simple:
+
+\vspace{0.5cm}
+\begin{lstlisting}[language=Python]
+from automl import AutoML
+...
+auto_ml = AutoML(
+    max_time=30,
+    problem_type='regression'
+)
+auto_ml.fit(X_train, y_train)
+predictions = auto_ml.predict(X_test)
+
+\end{lstlisting}
+\vspace{0.5cm}
+
+After fitting training data, built pipeline can be described by:
+\vspace{0.5cm}
+\begin{lstlisting}[language=Python]
+auto_ml.describe()
+\end{lstlisting}
+\vspace{0.5cm}
+
+
+This library was tested on the various regression and
+classification problems and selected appropriate models for each. They are listed in the table  \ref{fig:outputs}.
+
+This library also improved authors performance on Kaggles \textbf{House Prices} competition:
+
+\vspace{0.5cm}
+
+\smplimage[0.5]{kaggle}{png}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Possible improvements}
+
+\subsection{Preprocessing}
+As preprocessing is the most important part of any data analysis task\cite{ten-quick-tips}, it is the first part that
+should be improved in automated data analysis. In the framework of this project, this part did not get deserving attention
+because of the lack of authors time but should be considered as the primary optimization point of the implemented
+algorithm.
+
+\subsection{Hyperparameter optimization}
+Alongside with model selection, automated machine learning should implement hyperparameters tuning for each model
+individually. Prediction of appropriate model parameters can also be optimized using same (or another) meta-features
+collected from the datasets.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+
+Implemented solution is a good base for automated machine learning, but requires great changes to be useful in real
+world. Those changes especially related to preprocessing and hyperparameters selection.
+
+Relative landmarks could be able to perform well as a meta-features but require a much bigger number of training
+datasets to accurately predict models' quality.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{reference}
 
 \begin{figure*}[t]
 \center
@@ -121,7 +204,6 @@ meta-features are described in table \ref{fig:meta-features}.
     NFeaturesWithNANs & Number of features with missing values  \\
     NClasses          & Number of classes (in classification)   \\
     \hline
-    \hline
     \textbf{Statistical}   & \\
     \hline
     STDRatio          & Geometric mean of columns standard deviations   \\
@@ -131,54 +213,44 @@ meta-features are described in table \ref{fig:meta-features}.
     YImbalance        & STD of number of classes/bins of output column  \\
     YStd              & STD of output column (in regression)            \\
     \hline
-    \hline
     \textbf{Relative landmarks}   & \\
     \hline
-    rl $i$              & Relative landmark of the model $i$ \\
-    rl \dots            & \\
+    $i$\_rl              & Relative landmark of the model $i$ \\
+    \dots                & \\
     \end{tabular}
 
 \caption{Collected meta-features}
 \label{fig:meta-features}
 \end{figure*}
 
-\subsection{Models evaluation and selection}
-In model quality evaluation there are two primary characteristics: \textbf{accuracy} and \textbf{processing time}.
-Considering this characteristics, models quality is evaluated using so-called \textit{Adjusted Ratio of Ratios}(ARR)
-that combines models accuracy and processing time to assess relative performance among other models. \textit{In ARR
-the compromise between the two criteria is given by user in the form "the amount of accuracy I'm willing to trade for
-a 10 times speed-up is X\%"}\cite{sampling-based-relative-landmarks}. So for two given algorithms $i$ and $j$ on
-the data set $d$ the ARR computed as follows:
-$$ ARR^d_{ij} = \dfrac{\dfrac{A^d_i}{A^d_j}}{1+\log{(\dfrac{T^d_i}{T^d_j})}*X} $$
-where $A^d_i$ is accuracy of the model $i$ on the data set~$d$ and $T^d_i$ is its processing time.
+\begin{figure*}[b]
+\center
+    \begin{tabular}[c]{l l l}
+    Task                            & Best model            & Relative landmark \\
+    \hline
+    \textbf{Classification} & & \\
+    \hline
+    digit-recognizer                & BernoulliNB	        & 2.066080 \\
+    iris	                        & KNeighborsClassifier	& 1.434502 \\
+    mushroom-classification	        & ExtraTreeClassifier	& 1.164391 \\
+    titanic	                        & LinearSVC	            & 1.165423 \\
+    predicting-a-pulsar-star	    & LinearSVC	            & 1.046077 \\
+    optical-interconnection-network	& ExtraTreesClassifier	& 1.536793 \\
+    \hline
+    \textbf{Regression} & & \\
+    \hline
+    house-prices-advanced-regression-techniques	& LinearSVR	                 & 57949.007659 \\
+    bike-sharing-day	                        & OrthogonalMatchingPursuit	 & 55271.400277 \\
+    bike-sharing-hour	                        & OrthogonalMatchingPursuit	 & 59312.111086 \\
+    forest-fires	                            & PassiveAggressiveRegressor & 55830.907007 \\
+    wine-quality-white	                        & GradientBoostingRegressor	 & 15407.720029 \\
+    wine-quality-red	                        & BayesianRidge	             & 16774.263863 \\
+    absenteeism-at-work	                        & PassiveAggressiveRegressor & 27889.376686 \\
+    automobiles	                                & LinearSVR	                 & 56431.169345
+    \end{tabular}
 
-Accuracy in classification problems computed simply as a ratio of the number of correctly classified examples to
-the number of total examples: $ A^d_i = \dfrac{C}{N} $. Accuracy for regression problems is computed as:
-$$ A^d_i = 1 - \dfrac{RMSE_i}{\max_{j}RMSE_j} $$
-
-Now using computed ARRs, we can generate realtive landmarks for each of $n$ models:
-$$ rl^d_i = \dfrac{\sum_{j \neq i}ARR^d_{ij}}{n - 1} $$
-which is used to select the best model and as a meta-features on the subset of the task of size 500(chosen arbitrarily).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Possible improvements}
-
-As preprocessing is the most important part in any data analysis task\cite{ten-quick-tips}, it is the first part that
-should be improved in automated data analysis. In framework of this project this part did not get deserving attention
-because of the lack of authors time, but should be considered as the primary optimisation point of the implemented
-algorithm.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Outputs}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{reference}
-
+\caption{Relative landmarks and best models for the tested tasks.}
+\label{fig:outputs}
+\end{figure*}
 
 \end{document}
