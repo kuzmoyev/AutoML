@@ -23,8 +23,7 @@
 \usepackage{caption}
 \usepackage{listings}
 \usepackage{cleveref}
-
-
+\usepackage{mathtools}
 
 \graphicspath{{img/}}
 
@@ -83,7 +82,11 @@ Before Choosing}\cite{sampling-based-relative-landmarks} to predict algorithms q
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methods}
 
+Output library will be able to extract meta-features from the given data and build predictive pipeline using train data.
+Algorithm will try to predict performance of each used model, test them in the predicted order, choose the best one and
+fit to the train data in a limited time.
 
+Whole process consists of the following parts.
 
 \subsection{Preprocessing}
 For this project, only required preprocessing techniques were used:
@@ -93,13 +96,83 @@ For this project, only required preprocessing techniques were used:
     the means in numerical coulmns and most frequent values in categorical.
     \item \textbf{Encoding categorical data}. Nominal data is encoded using \textit{one hot encoding}. Ordinal features
     can be specified with the needed order, labels are then encoded with natural numbers.
+    \item \textbf{Dropping constant columns}.
+    \item \textbf{Scaling}. Standard scaling of numerical data.
 \end{itemize}
 
 Implementation is parameterized and can be easely extended with the other techniques.
 
+\subsection{Meta-data collection}
+
+Meta-features of the given dataset are collected for prediction of the quality of the used models. Collected
+meta-features are described in table \ref{fig:meta-features}.
+
+\begin{figure*}[t]
+\center
+    \begin{tabular}[c]{l l}
+    \textbf{Simple}   & \\
+    \hline
+    NExamples         & Number of examples                      \\
+    NFeatures         & Number of features                      \\
+    NBinary           & Number of binary features               \\
+    NCategorical      & Number of categorical features          \\
+    NNumerical        & Number of numerical features            \\
+    NExamplesWithNANs & Number of examples with missing values  \\
+    NFeaturesWithNANs & Number of features with missing values  \\
+    NClasses          & Number of classes (in classification)   \\
+    \hline
+    \hline
+    \textbf{Statistical}   & \\
+    \hline
+    STDRatio          & Geometric mean of columns standard deviations   \\
+    CorrelationMean   & Mean of columns correlation values              \\
+    KurtosisMean      & Mean of columns kurtosis values                 \\
+    SkewnessMean      & Mean of columns skewness values                 \\
+    YImbalance        & STD of number of classes/bins of output column  \\
+    YStd              & STD of output column (in regression)            \\
+    \hline
+    \hline
+    \textbf{Relative landmarks}   & \\
+    \hline
+    rl $i$              & Relative landmark of the model $i$ \\
+    rl \dots            & \\
+    \end{tabular}
+
+\caption{Collected meta-features}
+\label{fig:meta-features}
+\end{figure*}
+
+\subsection{Models evaluation and selection}
+In model quality evaluation there are two primary characteristics: \textbf{accuracy} and \textbf{processing time}.
+Considering this characteristics, models quality is evaluated using so-called \textit{Adjusted Ratio of Ratios}(ARR)
+that combines models accuracy and processing time to assess relative performance among other models. \textit{In ARR
+the compromise between the two criteria is given by user in the form "the amount of accuracy I'm willing to trade for
+a 10 times speed-up is X\%"}\cite{sampling-based-relative-landmarks}. So for two given algorithms $i$ and $j$ on
+the data set $d$ the ARR computed as follows:
+$$ ARR^d_{ij} = \dfrac{\dfrac{A^d_i}{A^d_j}}{1+\log{(\dfrac{T^d_i}{T^d_j})}*X} $$
+where $A^d_i$ is accuracy of the model $i$ on the data set~$d$ and $T^d_i$ is its processing time.
+
+Accuracy in classification problems computed simply as a ratio of the number of correctly classified examples to
+the number of total examples: $ A^d_i = \dfrac{C}{N} $. Accuracy for regression problems is computed as:
+$$ A^d_i = 1 - \dfrac{RMSE_i}{\max_{j}RMSE_j} $$
+
+Now using computed ARRs, we can generate realtive landmarks for each of $n$ models:
+$$ rl^d_i = \dfrac{\sum_{j \neq i}ARR^d_{ij}}{n - 1} $$
+which is used to select the best model and as a meta-features on the subset of the task of size 500(chosen arbitrarily).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Possible improvements}
+
+As preprocessing is the most important part in any data analysis task\cite{ten-quick-tips}, it is the first part that
+should be improved in automated data analysis. In framework of this project this part did not get deserving attention
+because of the lack of authors time, but should be considered as the primary optimisation point of the implemented
+algorithm.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Outputs}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
