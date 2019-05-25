@@ -89,7 +89,7 @@ class AutoML:
         meta_data['Task'] = task_name
         meta_data.move_to_end('Task', last=False)
 
-        meta_data.update({'{}'.format(cls.__name__): rl for (cls, kw), rl in landmarks})
+        meta_data.update({cls.__name__: rl for (cls, kw), rl in landmarks})
 
         if os.path.exists(file_path):
             df = pd.read_csv(file_path)

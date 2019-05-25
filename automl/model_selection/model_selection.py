@@ -1,11 +1,13 @@
 import signal
 from timeit import default_timer as timer
+from os import path
+from os import listdir
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier, \
     RandomForestClassifier, AdaBoostRegressor, BaggingRegressor, ExtraTreesRegressor, GradientBoostingRegressor, \
     RandomForestRegressor
@@ -13,12 +15,12 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, PassiveAggressiveClassifier, Perceptron, \
     BayesianRidge, HuberRegressor, LinearRegression, \
     OrthogonalMatchingPursuit, \
-    OrthogonalMatchingPursuitCV, PassiveAggressiveRegressor, Ridge, RidgeCV
+    OrthogonalMatchingPursuitCV, PassiveAggressiveRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier
-from sklearn.svm import LinearSVC, NuSVC, SVC, LinearSVR, NuSVR, SVR
+from sklearn.svm import LinearSVC, SVC, LinearSVR, NuSVR, SVR
 from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier, DecisionTreeRegressor, ExtraTreeRegressor
 
 from model_selection.problem_classification import ProblemClassifier
@@ -27,6 +29,7 @@ from model_selection.relative_landmarks import get_rls
 
 class BaseEvaluator:
     models = None
+    models_path = None
 
     def __init__(self, time_limit=0, time_accuracy_trade_rate=0):
         """
@@ -38,6 +41,16 @@ class BaseEvaluator:
         self.time_accuracy_trade_rate = time_accuracy_trade_rate
         self.models_quality = pd.DataFrame(columns=['Model', 'Score', 'Time'])
         self._relative_landmarks = None
+
+        if time_limit != 0:
+            # otherwise meta models are not needed
+            self._meta_models = self._get_meta_models()
+
+    def _get_meta_models(self):
+        return {
+            f: joblib.load(path.join(self.models_path, f))
+            for f in listdir(self.models_path)
+        }
 
     def evaluate_models(self, X, y, meta_data=None):
         ordered_models = self._models_in_predicted_order(meta_data)
@@ -87,8 +100,11 @@ class BaseEvaluator:
         If time_limit is zero returns unordered models."""
 
         if self.time_limit > 0:
-            # TODO Change here
-            return self.models
+            def predicted_landmark(model):
+                cls, params = model
+                return self._meta_models[cls.__name__].predict(meta_data)
+
+            return sorted(self.models, key=predicted_landmark, reverse=True)
         else:
             return self.models
 
@@ -122,6 +138,7 @@ class ClassificationEvaluator(BaseEvaluator):
         (RandomForestClassifier, dict()),
         (SVC, dict())
     ]
+    models_path = 'data/classification/models'
 
     score = 'accuracy'
 
@@ -148,6 +165,7 @@ class RegressionEvaluator(BaseEvaluator):
         (RandomForestRegressor, dict()),
         (SVR, dict()),
     ]
+    models_path = 'data/regression/models'
 
     score = 'neg_mean_squared_error'
 
