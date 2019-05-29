@@ -8,8 +8,8 @@ from sklearn.metrics.scorer import accuracy_scorer
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from model_selection.model_selection import ClassificationEvaluator, RegressionEvaluator
-from model_selection.problem_classification import ProblemClassifier
+from .model_selection import ClassificationEvaluator, RegressionEvaluator
+from .problem_classification import ProblemClassifier
 
 from collections import OrderedDict
 

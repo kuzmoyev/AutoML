@@ -35,7 +35,7 @@ class CategoricalToNumericalEncoder(TransformerMixin):
             if column not in X.columns:
                 X[column] = 0
 
-        return X
+        return X[self.one_hot_columns]
 
     def __repr__(self):
         return 'Ordinal: {}, Nominal: {}'.format(list(self.ordinal.keys()), list(self.nominal))

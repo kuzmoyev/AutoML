@@ -1,10 +1,10 @@
 from sklearn.pipeline import Pipeline
 import numpy as np
 
-from preprocessing.categorical import CategoricalToNumericalEncoder
-from preprocessing.drop_constant import ConstantColumnsDrop
-from preprocessing.imputation import AutoImputer
-from preprocessing.scaler import Scaler
+from .categorical import CategoricalToNumericalEncoder
+from .drop_constant import ConstantColumnsDrop
+from .imputation import AutoImputer
+from .scaler import Scaler
 
 
 class Preprocessing:

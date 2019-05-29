@@ -91,7 +91,7 @@ The whole process consists of the following parts.
 For this project, only required preprocessing techniques were used:
 
 \begin{itemize}
-    \item \textbf{Filling missing data} (because most of the tested models require complete data). NaNs are filled with
+    \item \textbf{Filling missing data} (because most of the tested classification_meta_models require complete data). NaNs are filled with
     the means in numerical coulmns and most frequent values in categorical.
     \item \textbf{Encoding categorical data}. Nominal data is encoded using \textit{one hot encoding}. Ordinal features
     can be specified with the needed order, labels are then encoded with natural numbers.
@@ -103,14 +103,14 @@ Implementation is parameterized and can be easily extended with the other techni
 
 \subsection{Meta-data collection}
 
-Meta-features of the given dataset are collected for prediction of the quality of the used models. Collected
+Meta-features of the given dataset are collected for prediction of the quality of the used classification_meta_models. Collected
 meta-features are described in table \ref{fig:meta-features}.
 
 
 \subsection{Models evaluation and selection}
 In model quality evaluation there are two primary characteristics: \textbf{accuracy} and \textbf{processing time}.
-Considering these characteristics, models quality is evaluated using so-called \textit{Adjusted Ratio of Ratios}(ARR)
-that combines models accuracy and processing time to assess relative performance among other models. \textit{In ARR
+Considering these characteristics, classification_meta_models quality is evaluated using so-called \textit{Adjusted Ratio of Ratios}(ARR)
+that combines classification_meta_models accuracy and processing time to assess relative performance among other classification_meta_models. \textit{In ARR
 the compromise between the two criteria is given by the user in the form "the amount of accuracy I'm willing to trade for
 a 10 times speed-up is X\%"}\cite{sampling-based-relative-landmarks}. So for two given algorithms $i$ and $j$ on
 the data set $d$ the ARR computed as follows:
@@ -121,7 +121,7 @@ Accuracy in classification problems computed simply as a ratio of the number of 
 the number of total examples: $ A^d_i = \dfrac{C}{N} $. Accuracy for regression problems is computed as:
 $$ A^d_i = 1 - \dfrac{RMSE_i}{\max_{j}RMSE_j} $$
 
-Now using computed ARRs, we can generate realtive landmarks for each of $n$ models:
+Now using computed ARRs, we can generate realtive landmarks for each of $n$ classification_meta_models:
 $$ rl^d_i = \dfrac{\sum_{j \neq i}ARR^d_{ij}}{n - 1} $$
 which is used to select the best model and as a meta-features on the subset of the task of size 100(chosen arbitrarily).
 
@@ -154,7 +154,7 @@ auto_ml.describe()
 
 
 This library was tested on the various regression and
-classification problems and selected appropriate models for each. They are listed in the table  \ref{fig:outputs}.
+classification problems and selected appropriate classification_meta_models for each. They are listed in the table  \ref{fig:outputs}.
 
 This library also improved authors performance on Kaggles \textbf{House Prices} competition:
 
@@ -184,7 +184,7 @@ Implemented solution is a good base for automated machine learning, but requires
 world. Those changes especially related to preprocessing and hyperparameters selection.
 
 Relative landmarks could be able to perform well as a meta-features but require a much bigger number of training
-datasets to accurately predict models' quality.
+datasets to accurately predict classification_meta_models' quality.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -249,7 +249,7 @@ datasets to accurately predict models' quality.
     automobiles	                                & LinearSVR	                 & 56431.169345
     \end{tabular}
 
-\caption{Relative landmarks and best models for the tested tasks.}
+\caption{Relative landmarks and best classification_meta_models for the tested tasks.}
 \label{fig:outputs}
 \end{figure*}
 

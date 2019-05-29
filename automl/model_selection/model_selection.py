@@ -23,8 +23,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import LinearSVC, SVC, LinearSVR, NuSVR, SVR
 from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier, DecisionTreeRegressor, ExtraTreeRegressor
 
-from model_selection.problem_classification import ProblemClassifier
-from model_selection.relative_landmarks import get_rls
+from .problem_classification import ProblemClassifier
+from .relative_landmarks import get_rls
 
 
 class BaseEvaluator:
@@ -33,7 +33,7 @@ class BaseEvaluator:
 
     def __init__(self, time_limit=0, time_accuracy_trade_rate=0):
         """
-        :param time_limit: time limit for models evaluations. Default is 0 (no limit)
+        :param time_limit: time limit for classification_meta_models evaluations. Default is 0 (no limit)
         :param time_accuracy_trade_rate: amount of accuracy(%) willing to trade for 10 times speed-up.
         """
 
@@ -43,7 +43,7 @@ class BaseEvaluator:
         self._relative_landmarks = None
 
         if time_limit != 0:
-            # otherwise meta models are not needed
+            # otherwise meta classification_meta_models are not needed
             self._meta_models = self._get_meta_models()
 
     def _get_meta_models(self):
@@ -96,13 +96,13 @@ class BaseEvaluator:
         return score, end - start
 
     def _models_in_predicted_order(self, meta_data=None):
-        """Returns models in performance order, predicted using meta-features.
-        If time_limit is zero returns unordered models."""
+        """Returns classification_meta_models in performance order, predicted using meta-features.
+        If time_limit is zero returns unordered classification_meta_models."""
 
         if self.time_limit > 0:
             def predicted_landmark(model):
                 cls, params = model
-                return self._meta_models[cls.__name__].predict(meta_data)
+                return self._meta_models[cls.__name__].predict(pd.DataFrame(meta_data, index=[0]))
 
             return sorted(self.models, key=predicted_landmark, reverse=True)
         else:
@@ -138,7 +138,7 @@ class ClassificationEvaluator(BaseEvaluator):
         (RandomForestClassifier, dict()),
         (SVC, dict())
     ]
-    models_path = 'data/classification/models'
+    models_path = path.join(path.dirname(path.realpath(__file__)), 'classification_meta_models')
 
     score = 'accuracy'
 
@@ -165,7 +165,7 @@ class RegressionEvaluator(BaseEvaluator):
         (RandomForestRegressor, dict()),
         (SVR, dict()),
     ]
-    models_path = 'data/regression/models'
+    models_path = path.join(path.dirname(path.realpath(__file__)), 'regression_meta_models')
 
     score = 'neg_mean_squared_error'
 

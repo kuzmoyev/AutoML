@@ -3,10 +3,10 @@ import os
 from sklearn.pipeline import Pipeline
 import pandas as pd
 
-from model_selection.model_selection import get_evaluator
-from preprocessing.preprocessing import Preprocessing
-from model_selection.problem_classification import ProblemClassifier
-from model_selection.metadata_extraction import get_extractor
+from .model_selection.model_selection import get_evaluator
+from .preprocessing.preprocessing import Preprocessing
+from .model_selection.problem_classification import ProblemClassifier
+from .model_selection.metadata_extraction import get_extractor
 
 
 class AutoML:

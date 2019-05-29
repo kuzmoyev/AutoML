@@ -1,5 +1,5 @@
 from sklearn.pipeline import TransformerMixin
-from sklearn.preprocessing import Imputer
+
 import pandas as pd
 import numpy as np
 
